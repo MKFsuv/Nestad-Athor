@@ -45,6 +45,8 @@ while (true)
             MoveRight(map);
             break;
         default:
+            Console.Clear();
+            Console.WriteLine("Invalid input.");
             break;
     }
 }
