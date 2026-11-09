@@ -1,0 +1,148 @@
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
+using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Media;
+using Microsoft.Xna.Framework.Content;
+using System;
+
+namespace Mouse_test
+{
+    public class Game1 : Game
+    {
+        private GraphicsDeviceManager _graphics;
+        private SpriteBatch _spriteBatch;
+
+        KeyboardState prevKBState;
+        MouseState prevMouseState;
+        private Vector2 position;
+        private float rotation;
+
+        float attacktime = 0.0f;
+
+        private Vector2 mousePosition;
+        private Vector2 distance;
+
+        private Vector2 distanceM;
+
+        private Texture2D player;
+
+        private Texture2D attack;
+
+        private Texture2D hitbox;
+
+        public Game1()
+        {
+            _graphics = new GraphicsDeviceManager(this);
+            Content.RootDirectory = "Content";
+            IsMouseVisible = true;
+        }
+
+        protected override void Initialize()
+        {
+            // TODO: Add your initialization logic here
+
+            Window.AllowAltF4 = true;
+            Window.AllowUserResizing = true;
+
+            base.Initialize();
+        }
+
+        protected override void LoadContent()
+        {
+            _spriteBatch = new SpriteBatch(GraphicsDevice);
+
+            // TODO: use this.Content to load your game content here
+
+            rotation = 0.0f;
+            position = new Vector2(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height / 2);
+            player = Content.Load<Texture2D>("mona-sad-cat-rag-sit"); //change here for the player texture
+            attack = Content.Load<Texture2D>("attack"); //and just change here for the attack texture
+        }
+
+        protected override void Update(GameTime gameTime)
+        {
+            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+                Exit();
+
+            // TODO: Add your update logic here
+            MouseState currentMouseState = Mouse.GetState();
+            KeyboardState currentKBState = Keyboard.GetState();
+
+            Vector2 Position = new Vector2(position.X, position.Y);
+
+            if (currentKBState.IsKeyDown(Keys.W) && prevKBState.IsKeyUp(Keys.W))
+            {
+                position.Y -= 5f;
+            }
+            if (currentKBState.IsKeyDown(Keys.S) && prevKBState.IsKeyUp(Keys.S))
+            {
+                position.Y += 5f;
+            }
+            if (currentKBState.IsKeyDown(Keys.A) && prevKBState.IsKeyUp(Keys.A))
+            {
+                position.X -= 5f;
+            }
+            if (currentKBState.IsKeyDown(Keys.D) && prevKBState.IsKeyUp(Keys.D))
+            {
+                position.X += 5f;
+            }
+
+            Vector2 mousePosition = Mouse.GetState().Position.ToVector2();
+            distance.X = mousePosition.X - position.X;
+            distance.Y = mousePosition.Y - position.Y;
+            rotation = (float)Math.Atan2(distance.Y, distance.X);
+            distanceM.X = 20f;
+            distanceM.Y = 20f;
+
+            base.Update(gameTime);
+        }
+
+        protected override void Draw(GameTime gameTime)
+        {
+            GraphicsDevice.Clear(Color.CornflowerBlue);
+
+            // TODO: Add your drawing code here
+
+            _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
+
+            _spriteBatch.Draw(player,
+                new Rectangle((int)position.X, (int)position.Y, player.Width, player.Height),
+                null,
+                Color.White,
+                rotation,
+                new Vector2(player.Width / 2, player.Height / 2),
+                SpriteEffects.None,
+                0f
+
+                );
+            if (Mouse.GetState().LeftButton == ButtonState.Pressed && prevMouseState.LeftButton == ButtonState.Released && attacktime < 0.5f)
+            {
+                _spriteBatch.Draw(attack,
+                new Rectangle((int)(position.X+50*Math.Cos(rotation)), (int)(position.Y + 50 * Math.Sin(rotation)), attack.Width, attack.Height),
+                null,
+                Color.White,
+                rotation,
+                new Vector2(attack.Width / 2, attack.Height / 2),
+                SpriteEffects.None,
+                0f
+
+                );
+                attacktime += (float)gameTime.ElapsedGameTime.TotalSeconds;
+            }
+            else if (attacktime >= 0.5f)
+            {
+                attacktime += (float)gameTime.ElapsedGameTime.TotalSeconds;
+                if (attacktime >= 1.0f)
+                {
+                    attacktime = 0.0f;
+                }
+               
+            }
+
+            _spriteBatch.End();
+
+            base.Draw(gameTime);
+        }
+    }
+}
